@@ -1,115 +1,115 @@
-# System Architecture
+# System Architecture Document
 
-## 1. High-Level Architecture
-The system follows a three-tier architecture:
-- Frontend (React)
-- Backend API
+## 1. System Architecture Overview
+
+The Multi-Tenant SaaS Platform follows a standard three-tier architecture with strict separation of concerns.
+
+### Components:
+- **Client (Browser)**: Accessed by end users
+- **Frontend Application**: React-based UI running in a Docker container
+- **Backend API Server**: Node.js + Express REST API
+- **Database**: PostgreSQL for persistent data storage
+
+### Authentication Flow:
+1. User logs in via frontend
+2. Backend validates credentials
+3. JWT token is issued
+4. Token is sent with every authenticated request
+5. Backend validates token and enforces RBAC and tenant isolation
+
+## 2. System Architecture Diagram
+
+The diagram below illustrates the high-level interaction between system components including authentication flow.
+
+**Diagram Location:**  
+`docs/images/system-architecture.png`
+
+**Diagram Includes:**
+- Client (Browser)
+- Frontend Application
+- Backend API Server
 - PostgreSQL Database
+- JWT-based Authentication Flow
+- Dockerized deployment
 
----
+## 3. Database Schema Design (ERD)
 
-## 2. Multi-Tenancy Enforcement
-Tenant isolation is enforced using tenant_id filtering in all database queries.
+The application uses a **shared database with shared schema** multi-tenancy model.
 
----
+### Core Tables:
+- `tenants`
+- `users`
+- `projects`
+- `tasks`
+- `audit_logs`
 
-## 3. API Endpoints
+### Multi-Tenancy Enforcement:
+- All tenant-scoped tables contain a `tenant_id`
+- `users.tenant_id` is `NULL` only for `super_admin`
+- Indexes exist on `tenant_id` for performance
+- Foreign keys enforce referential integrity
 
-The backend exposes RESTful APIs grouped by functionality. All endpoints (except health check) are protected using JWT authentication and role-based access control.
+**ERD Diagram Location:**  
+`docs/images/database-erd.png`
 
-### 3.1 Authentication & Authorization
-1. POST /api/auth/login  
-   - Authenticates user using email, password, and tenant subdomain
+## 4. API Architecture
 
-2. POST /api/auth/register-tenant  
-   - Registers a new tenant and creates the tenant_admin (transactional)
+All APIs follow REST principles and return a consistent response format:
+```json
+{ "success": true, "message": "...", "data": {} }
 
-3. POST /api/auth/logout  
-   - Logs out the user (JWT-based, client-side token removal)
+4.1 Authentication & Authorization
 
-4. GET /api/auth/me  
-   - Returns details of the currently authenticated user
+| Method | Endpoint                  | Auth | Role   |
+| ------ | ------------------------- | ---- | ------ |
+| POST   | /api/auth/login           | No   | Public |
+| POST   | /api/auth/register-tenant | No   | Public |
+| GET    | /api/auth/me              | Yes  | All    |
+| POST   | /api/auth/logout          | Yes  | All    |
 
----
+4.2 Tenant Management
 
-### 3.2 Tenant Management (Super Admin Only)
-5. GET /api/tenants  
-   - List all tenants with pagination and filters
+| Method | Endpoint               | Auth | Role        |
+| ------ | ---------------------- | ---- | ----------- |
+| GET    | /api/tenants           | Yes  | Super Admin |
+| GET    | /api/tenants/:tenantId | Yes  | Super Admin |
+| PUT    | /api/tenants/:tenantId | Yes  | Super Admin |
 
-6. GET /api/tenants/:tenantId  
-   - Get details of a specific tenant
+4.3 User Management
 
-7. PUT /api/tenants/:tenantId  
-   - Update tenant details (subscription, status, limits)
+| Method | Endpoint           | Auth | Role         |
+| ------ | ------------------ | ---- | ------------ |
+| POST   | /api/users         | Yes  | Tenant Admin |
+| GET    | /api/users         | Yes  | Tenant Admin |
+| DELETE | /api/users/:userId | Yes  | Tenant Admin |
 
----
+4.4 Project Management
 
-### 3.3 User Management
-8. POST /api/users  
-   - Create a new user within a tenant (subscription limits enforced)
+| Method | Endpoint                 | Auth | Role         |
+| ------ | ------------------------ | ---- | ------------ |
+| POST   | /api/projects            | Yes  | Tenant Admin |
+| GET    | /api/projects            | Yes  | Tenant Users |
+| PUT    | /api/projects/:projectId | Yes  | Tenant Admin |
+| DELETE | /api/projects/:projectId | Yes  | Tenant Admin |
 
-9. GET /api/users  
-   - List all users within the tenant
+4.5 Task Management
 
-10. DELETE /api/users/:userId  
-    - Delete a user (tenant_admin cannot delete themselves)
+| Method | Endpoint                      | Auth | Role         |
+| ------ | ------------------------------| ---- | -------------|
+| POST   | /api/projects/:projectId/tasks| Yes  | Tenant Users |
+| GET    | /api/projects/:projectId/tasks| Yes  | Tenant Users |
+| PUT    | /api/tasks/:taskId            | Yes  | Tenant Users |
+| DELETE | /api/tasks/:taskId            | Yes  | Tenant Admin |
 
----
+4.6 System Health
 
-### 3.4 Project Management
-11. POST /api/projects  
-    - Create a new project (max_projects limit enforced)
+| Method | Endpoint    | Auth | Role   |
+| ------ | ----------- | ---- | ------ |
+| GET    | /api/health | No   | Public |
 
-12. GET /api/projects  
-    - List all projects within the tenant
+5. Deployment Architecture
 
-13. PUT /api/projects/:projectId  
-    - Update project details
-
-14. DELETE /api/projects/:projectId  
-    - Delete a project
-
----
-
-### 3.5 Task Management
-15. POST /api/projects/:projectId/tasks  
-    - Create a task under a project
-
-16. GET /api/projects/:projectId/tasks  
-    - List tasks under a project
-
-17. PUT /api/tasks/:taskId  
-    - Update task details or status
-
-18. DELETE /api/tasks/:taskId  
-    - Delete a task
-
----
-
-### 3.6 System Health
-19. GET /health  
-    - Health check endpoint to verify API and database connectivity
-
-
-## 4. Database Design (ERD)
-The database consists of:
-- tenants
-- users
-- projects
-- tasks
-- audit_logs
-
-Each relationship is enforced using foreign keys.
-
----
-
-## 5. Diagrams
-
-### 5.1 System Architecture Diagram
-A high-level diagram showing the interaction between the frontend, backend API, and database.
-(Location: docs/images/system-architecture.png)
-
-### 5.2 Database ERD
-An Entity Relationship Diagram illustrating all database tables and their relationships.
-(Location: docs/images/database-erd.png)
-
+All services run in Docker containers
+Managed using docker-compose
+Services communicate using Docker service names
+One-command startup: docker-compose up -d
