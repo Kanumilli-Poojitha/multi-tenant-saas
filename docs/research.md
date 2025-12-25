@@ -1,182 +1,149 @@
 # Multi-Tenant SaaS Architecture Research & Design Decisions
 
 ## 1. Introduction
-This document presents the architectural research and design decisions behind the Multi-Tenant SaaS Project & Task Management Platform. The goal of this system is to provide a scalable, secure, and production-ready SaaS application that supports multiple organizations (tenants) while ensuring strict data isolation, role-based access control, and operational reliability.
+This document presents the research, architectural analysis, and design decisions behind the **Multi-Tenant SaaS Project & Task Management Platform**. The objective of this system is to build a production-ready SaaS application that supports multiple organizations (tenants) while ensuring strict data isolation, secure authentication, role-based access control (RBAC), and scalable deployment.
 
-The application follows modern SaaS best practices including multi-tenancy, JWT-based authentication, role-based authorization, Docker-based deployment, and audit logging.
+The system is designed using modern SaaS best practices including multi-tenancy, JWT-based authentication, RESTful APIs, Docker-based containerization, and audit logging.
 
-## 2. Multi-Tenancy Model Selection
+## 2. Multi-Tenancy Architecture Analysis
+Multi-tenancy is a core requirement of SaaS systems, allowing multiple organizations to share the same application while keeping their data fully isolated. Three common multi-tenancy approaches were evaluated.
 
-### 2.1 Shared Database with Shared Schema
-This project uses a **shared database with a shared schema**, where all tenants coexist in the same database and tables. Tenant isolation is enforced using a `tenant_id` column in all tenant-scoped tables.
+### 2.1 Multi-Tenancy Approaches Comparison
 
-**Reasons for choosing this approach:**
-- Lower infrastructure cost
-- Easier maintenance and deployment
-- Centralized schema migrations
-- Suitable for early-stage and mid-scale SaaS platforms
+| Approach | Description | Pros | Cons |
+|--------|------------|------|------|
+| Shared DB + Shared Schema | All tenants share the same database and tables, isolated via tenant_id | Low cost, simple migrations, easy scaling | Requires strict query-level isolation |
+| Shared DB + Separate Schema | One database, separate schema per tenant | Better isolation, easier per-tenant backups | Complex schema management, harder migrations |
+| Separate Database per Tenant | Each tenant has its own database | Strong isolation, independent scaling | High cost, operational complexity |
 
-### 2.2 Tenant Isolation Strategy
-Each tenant-scoped table (users, projects, tasks, audit_logs) includes a `tenant_id`. All queries are filtered by `tenant_id` unless the requesting user is a `super_admin`.
+### 2.2 Chosen Approach: Shared Database + Shared Schema
+This project uses a shared database with a shared schema, where all tenant-scoped tables include a `tenant_id` column.
 
-This guarantees that:
-- Tenants cannot access each other’s data
-- Accidental cross-tenant data leaks are prevented at the query level
+**Reasons for selection:**
+- Cost-effective for early to mid-scale SaaS products
+- Simplified schema migrations
+- Easier Docker-based deployment
+- Suitable for centralized management and evaluation
 
-## 3. Super Admin Design (Q1, Q6)
+Tenant isolation is enforced strictly at the API and database query level.
 
-Super administrators are system-level users who are not associated with any tenant. In the database, this is represented by setting:
+## 3. Tenant Isolation Strategy
+Each tenant-scoped table (`users`, `projects`, `tasks`, `audit_logs`) includes a `tenant_id`.  
+All API queries are filtered using `tenant_id` derived from the authenticated JWT token.
 
+This ensures:
+- Tenants cannot access other tenants’ data
+- No cross-tenant data leakage through API manipulation
+- Strong logical isolation despite shared infrastructure
+
+## 4. Super Admin Design
+Super administrators are system-level users not associated with any tenant.
+
+Database representation:
 - `users.tenant_id = NULL`
 - `users.role = 'super_admin'`
 
-When a super_admin makes an API request:
-- The JWT token contains `tenantId: null`
-- Authorization logic bypasses tenant-based filtering
-- Super admins can view and manage all tenants
+Behavior:
+- JWT contains `tenantId = null`
+- Tenant-based query filtering is bypassed
+- Super admins can manage all tenants and subscriptions
 
-This approach avoids artificial tenant assignment for system administrators and simplifies global operations such as tenant management and subscription control.
+This avoids artificial tenant assignment and simplifies global administration.
 
-## 4. Authentication Strategy: JWT-Only vs Sessions (Q7, Q11)
+## 5. Authentication Strategy
 
-### 4.1 JWT-Only Authentication (Chosen Approach)
-This project uses **JWT-only authentication** without a mandatory sessions table.
+### 5.1 JWT-Based Authentication (Chosen)
+The system uses **JWT-only authentication** with a 24-hour expiry.
 
-**Workflow:**
-- Login generates a signed JWT
-- Client stores the token
-- Token is verified on every request
-- Logout is handled client-side by deleting the token
+Workflow:
+1. User logs in
+2. Server issues signed JWT
+3. Token is sent with each request
+4. Token is verified using middleware
 
-**Advantages:**
+Advantages:
 - Stateless and scalable
-- No server-side session storage
-- Easier horizontal scaling
 - Ideal for containerized environments
+- No server-side session storage required
 
-### 4.2 Tradeoff: Sessions Table vs JWT
-While session-based authentication allows server-side token revocation, it adds complexity and state management. Given the scope of this project, JWT-only authentication provides the best balance between security and simplicity.
-
-## 5. JWT Payload Design (Q7)
-
-Only minimal, non-sensitive data is included in the JWT payload:
-
+### 5.2 JWT Payload Design
+JWT payload includes only:
 - `userId`
-- `tenantId` (null for super_admin)
+- `tenantId`
 - `role`
 
-Sensitive data such as passwords or email addresses are never included in the token.
+Sensitive data is never included in the token.
 
 ## 6. Role-Based Access Control (RBAC)
-
-The system defines three roles:
+Three roles are supported:
 - `super_admin`
 - `tenant_admin`
 - `user`
 
-Authorization middleware enforces:
-- Endpoint-level role checks
-- Tenant-level access control
-- Self-protection rules (e.g., tenant_admin cannot delete themselves)
+Authorization is enforced at:
+- API endpoint level
+- Tenant access level
+- Resource ownership level
 
-RBAC ensures principle of least privilege across the system.
+RBAC follows the principle of least privilege and prevents unauthorized actions.
 
-## 7. Data Integrity in Task & Project Creation (Q3)
+## 7. Database Design & Integrity
+Key design considerations:
+- Foreign keys with CASCADE deletes where appropriate
+- Unique constraint on `(tenant_id, email)`
+- Indexes on tenant_id columns for performance
 
-When creating a task, the `tenant_id` is always derived from the associated project, not from the JWT token.
+Task creation derives `tenant_id` from the associated project, preventing malicious manipulation.
 
-**Process:**
-1. Verify project exists
-2. Verify project belongs to the user’s tenant
-3. Fetch `tenant_id` from project
-4. Use this tenant_id when creating the task
+## 8. Subscription Management
+Three subscription plans are supported:
+- Free: 5 users, 3 projects
+- Pro: 25 users, 15 projects
+- Enterprise: 100 users, 50 projects
 
-This prevents malicious or accidental tenant_id manipulation.
+Limits are enforced at API level before resource creation.  
+New tenants default to the free plan.
 
-## 8. Email Uniqueness per Tenant (Q4)
-
-Email addresses are unique **per tenant**, not globally.
-
-Database constraint:
-UNIQUE (tenant_id, email)
-
-This allows the same email to exist across different tenants while maintaining uniqueness within a tenant.
-
-## 9. Subscription Limits Enforcement (Q5)
-
-Each tenant has subscription limits such as:
-- `max_users`
-- `max_projects`
-
-Before creating users or projects:
-- Current count is checked
-- Limits are enforced at API level
-- Requests exceeding limits return HTTP 403
-
-## 10. Tenant Registration as a Transaction (Q8)
-
-Tenant registration is implemented as an atomic database transaction:
+## 9. Transaction Safety
+Critical operations (such as tenant registration) are executed inside database transactions:
 1. Create tenant
-2. Create tenant_admin
-3. Commit if successful
+2. Create tenant admin
+3. Commit on success
 4. Rollback on failure
 
-This prevents inconsistent states.
+This prevents partial or inconsistent states.
 
-## 11. Audit Logging (Q12)
-
-All critical actions are recorded in the `audit_logs` table, including:
+## 10. Audit Logging
+All important actions are recorded in the `audit_logs` table, including:
 - User management
 - Project and task operations
 - Tenant updates
-- Authentication events (optional)
 
-Audit logs improve traceability, debugging, and security monitoring.
+Audit logging improves traceability, security monitoring, and debugging.
 
-## 12. Password Hashing Strategy (Q13)
+## 11. Security Considerations
+Key security measures implemented:
+1. Strict tenant_id filtering
+2. JWT signature verification and expiry
+3. Secure password hashing (bcrypt/Argon2)
+4. Parameterized SQL queries
+5. Centralized authorization middleware
 
-Passwords are securely hashed using industry-standard algorithms such as bcrypt or Argon2.
-
-- Plain-text passwords are never stored
-- Password verification uses secure compare functions
-- Weak algorithms like MD5 or SHA1 are never used
-
-## 13. Data Deletion Strategy: Cascade vs NULL (Tradeoff)
-
-Two strategies were considered:
-- Cascade deletes
-- Setting foreign keys to NULL
-
-This project adopts a consistent approach where:
-- Audit logs are preserved
-- Tasks assigned to deleted users have `assigned_to = NULL`
-
-This maintains historical integrity while preventing orphaned references.
-
-## 14. Security Risks & Mitigations
-
-### Risks:
-- Cross-tenant data access
-- JWT token leakage
+These measures protect against:
+- Cross-tenant access
 - SQL injection
 - Privilege escalation
+- Token misuse
 
-### Mitigations:
-- Strict tenant_id filtering
-- JWT signature verification and expiry
-- Parameterized queries
-- Centralized authorization middleware
+## 12. Docker-Based Deployment
+The application is fully containerized using Docker and Docker Compose:
+- Database
+- Backend
+- Frontend
 
-## 15. Docker-Based Deployment
+All services start with a single command:
+docker-compose up -d
+This ensures environment consistency and simplifies evaluation.
 
-Docker is used to ensure:
-- Environment consistency
-- Easy evaluation
-- Reproducible builds
-- One-command startup via docker-compose
-
-All services (database, backend, frontend) are containerized and orchestrated together.
-
-## 16. Conclusion
-
-This architecture follows real-world SaaS best practices and balances scalability, security, and maintainability. The design choices made in this project align with modern production systems and demonstrate a strong understanding of multi-tenant SaaS architecture.
+## 13. Conclusion
+This architecture follows real-world SaaS best practices and balances scalability, security, and maintainability. The design decisions align with production-grade systems and demonstrate a solid understanding of multi-tenant SaaS architecture.
