@@ -4,11 +4,8 @@ const { JWT_SECRET, JWT_EXPIRES_IN } = require("../config/jwt");
 const { hashPassword, comparePassword } = require("../utils/password");
 const { logAudit } = require("../services/audit.service");
 
-/**
- * Register new tenant + tenant admin
- */
 exports.registerTenant = async (req, res, next) => {
-  const client = await db.connect();
+  const client = await db.getClient();
 
   try {
     const {
@@ -21,7 +18,6 @@ exports.registerTenant = async (req, res, next) => {
 
     await client.query("BEGIN");
 
-    // Check subdomain uniqueness
     const exists = await client.query(
       "SELECT 1 FROM tenants WHERE subdomain = $1",
       [subdomain]
@@ -35,33 +31,35 @@ exports.registerTenant = async (req, res, next) => {
       });
     }
 
-    // Create tenant
     const tenantResult = await client.query(
-      `INSERT INTO tenants (
+      `
+      INSERT INTO tenants (
         id, name, subdomain, status, subscription_plan,
         max_users, max_projects, created_at
       )
       VALUES (
         gen_random_uuid(), $1, $2, 'active', 'free', 5, 3, NOW()
       )
-      RETURNING id, subdomain`,
+      RETURNING id, subdomain
+      `,
       [tenantName, subdomain]
     );
 
     const tenantId = tenantResult.rows[0].id;
 
-    // Create tenant admin
     const passwordHash = await hashPassword(adminPassword);
 
     const adminResult = await client.query(
-      `INSERT INTO users (
+      `
+      INSERT INTO users (
         id, tenant_id, email, password_hash,
         full_name, role, is_active, created_at
       )
       VALUES (
         gen_random_uuid(), $1, $2, $3, $4, 'tenant_admin', true, NOW()
       )
-      RETURNING id, email, full_name, role`,
+      RETURNING id, email, full_name, role
+      `,
       [tenantId, adminEmail, passwordHash, adminFullName]
     );
 

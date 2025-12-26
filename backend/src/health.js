@@ -1,13 +1,6 @@
-const { pool, isDbReady } = require("./db");
+const { pool, isDbReady } = require("./config/db");
 
 const healthCheck = async (req, res) => {
-  if (!isDbReady()) {
-    return res.status(503).json({
-      status: "starting",
-      database: "not_ready",
-    });
-  }
-
   try {
     await pool.query("SELECT 1");
     res.json({
@@ -15,9 +8,9 @@ const healthCheck = async (req, res) => {
       database: "connected",
     });
   } catch (err) {
-    res.status(500).json({
-      status: "error",
-      database: "disconnected",
+    res.status(503).json({
+      status: "starting",
+      database: "not_ready",
     });
   }
 };
