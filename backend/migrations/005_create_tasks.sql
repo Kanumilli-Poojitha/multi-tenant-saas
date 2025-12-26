@@ -1,5 +1,5 @@
 -- UP
-CREATE TABLE tasks (
+CREATE TABLE IF NOT EXISTS tasks (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     project_id UUID NOT NULL,
     tenant_id UUID NOT NULL,
