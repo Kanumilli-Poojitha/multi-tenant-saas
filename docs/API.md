@@ -85,6 +85,29 @@ Success Response:
     }
 }
 
+
+Super admin login:
+
+Body:
+{
+  "email": "superadmin@system.com",
+  "password": "Admin@123"
+}
+Response:
+{
+    "success": true,
+    "data": {
+        "user": {
+            "id": "f9dc7ef1-c2d4-4b53-a2f5-904cdac73abd",
+            "email": "superadmin@system.com",
+            "fullName": "Super Admin",
+            "role": "super_admin"
+        },
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmOWRjN2VmMS1jMmQ0LTRiNTMtYTJmNS05MDRjZGFjNzNhYmQiLCJyb2xlIjoic3VwZXJfYWRtaW4iLCJpYXQiOjE3NjY4MDMzNDUsImV4cCI6MTc2Njg4OTc0NX0.uOlb6yfT21a0W2QPRuBVt3pCgPK-WyC3mqbAgE2irGM",
+        "expiresIn": "24h"
+    }
+}
+
 Error Responses:
 401: Invalid credentials
 404: Tenant not found
@@ -104,22 +127,22 @@ Content-Type: application/json
 Success Response (200):
 
 {
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "email": "value",
-    "fullName": "value",
-    "role": "tenant_admin",
-    "isActive": true,
-    "tenant": {
-      "id": "uuid",
-      "name": "value",
-      "subdomain": "value",
-      "subscriptionPlan": "pro",
-      "maxUsers": 10,
-      "maxProjects": 20
-    }
-  }
+    "success": true,
+    "data": {
+        "id": "40cb8612-a14a-4e1b-a68b-8cb6d0d9fc37",
+        "email": "admin@acme.com",
+        "fullName": "Acme Admin",
+        "role": "tenant_admin",
+        "isActive": true,
+        "tenant": {
+            "id": "ac26495a-da88-420d-a0b4-b5f784570952",
+            "name": "Acme Corp",
+            "subdomain": "acme",
+            "subscriptionPlan": "free",
+            "maxUsers": 5,
+            "maxProjects": 3
+        }
+    }
 }
 
 Error Responses:
@@ -151,22 +174,17 @@ Authorization: Required
 Success Response (200):
 
 {
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "name": "value",
-    "subdomain": "value",
-    "status": "active",
-    "subscriptionPlan": "pro",
-    "maxUsers": 10,
-    "maxProjects": 20,
-    "createdAt": "timestamp",
-    "stats": {
-      "totalUsers": 5,
-      "totalProjects": 3,
-      "totalTasks": 15
-    }
-  }
+    "success": true,
+    "data": {
+        "id": "ac26495a-da88-420d-a0b4-b5f784570952",
+        "name": "Acme Corp",
+        "subdomain": "acme",
+        "status": "active",
+        "subscription_plan": "free",
+        "max_users": 5,
+        "max_projects": 3,
+        "created_at": "2025-12-26T09:33:38.766Z"
+    }
 }
 
 Error Responses:
@@ -194,14 +212,15 @@ Request Body (Super Admin – full access)
 }
 
 Success Response (200)
+
 {
-  "success": true,
-  "message": "Tenant updated successfully",
-  "data": {
-    "id": "uuid",
-    "name": "Updated Tenant Name",
-    "updatedAt": "2025-01-01T10:30:00Z"
-  }
+    "success": true,
+    "message": "Tenant updated successfully",
+    "data": {
+        "id": "ac26495a-da88-420d-a0b4-b5f784570952",
+        "name": "Updated Tenant Name",
+        "updated_at": "2025-12-27T01:46:19.898Z"
+    }
 }
 
 Error Responses
@@ -220,37 +239,114 @@ Role: Super Admin
 Success Response (200):
 
 {
-  "success": true,
-  "data": {
-    "tenants": [
-      {
-        "id": "uuid",
-        "name": "value",
-        "subdomain": "value",
-        "status": "active",
-        "subscriptionPlan": "pro",
-        "totalUsers": 5,
-        "totalProjects": 3,
-        "createdAt": "timestamp"
-      }
-    ],
-    "pagination": {
-      "currentPage": 1,
-      "totalPages": 5,
-      "totalTenants": 47,
-      "limit": 10
-    }
-  }
+    "success": true,
+    "data": [
+        {
+            "id": "6aca1cda-5be2-4637-baeb-5c6f1ed073d1",
+            "name": "Acme Corp",
+            "subdomain": "accme",
+            "status": "active",
+            "subscription_plan": "free",
+            "max_users": 5,
+            "max_projects": 3,
+            "created_at": "2025-12-26T12:42:44.831Z"
+        },
+        {
+            "id": "f739b7ee-751c-496b-b3bc-71ab6f11c1ea",
+            "name": "Acme Corp",
+            "subdomain": "abcdme",
+            "status": "active",
+            "subscription_plan": "free",
+            "max_users": 5,
+            "max_projects": 3,
+            "created_at": "2025-12-26T12:19:03.621Z"
+        },
+        {
+            "id": "ddf5d96c-dbc6-4434-9289-6b6f28dd3da6",
+            "name": "Acme Corp",
+            "subdomain": "abcme",
+            "status": "active",
+            "subscription_plan": "free",
+            "max_users": 5,
+            "max_projects": 3,
+            "created_at": "2025-12-26T11:57:03.317Z"
+        },
+        {
+            "id": "be97c9de-0438-42d0-8b27-cd9cec56f67b",
+            "name": "Acme Corp",
+            "subdomain": "adcme",
+            "status": "active",
+            "subscription_plan": "free",
+            "max_users": 5,
+            "max_projects": 3,
+            "created_at": "2025-12-26T10:38:31.899Z"
+        },
+        {
+            "id": "0ddadeb9-999e-44e7-b334-1d687dcf2e8d",
+            "name": "Acme Corp",
+            "subdomain": "acmde",
+            "status": "active",
+            "subscription_plan": "free",
+            "max_users": 5,
+            "max_projects": 3,
+            "created_at": "2025-12-26T10:16:18.210Z"
+        },
+        {
+            "id": "9916db8e-c249-4a87-94b6-abf9a8ea79e0",
+            "name": "Acme Corp",
+            "subdomain": "acmre",
+            "status": "active",
+            "subscription_plan": "free",
+            "max_users": 5,
+            "max_projects": 3,
+            "created_at": "2025-12-26T10:07:01.674Z"
+        },
+        {
+            "id": "6b64e4ef-d1a7-4b60-b7ca-a432003f8076",
+            "name": "Demo Corp",
+            "subdomain": "democorp",
+            "status": "active",
+            "subscription_plan": "free",
+            "max_users": 5,
+            "max_projects": 3,
+            "created_at": "2025-12-26T09:40:04.337Z"
+        },
+        {
+            "id": "ac26495a-da88-420d-a0b4-b5f784570952",
+            "name": "Updated Tenant Name",
+            "subdomain": "acme",
+            "status": "active",
+            "subscription_plan": "free",
+            "max_users": 5,
+            "max_projects": 3,
+            "created_at": "2025-12-26T09:33:38.766Z"
+        },
+        {
+            "id": "df1e2d8b-1761-4b83-8126-6380d7e7dfa2",
+            "name": "Demo Tenant",
+            "subdomain": "demo",
+            "status": "active",
+            "subscription_plan": "free",
+            "max_users": 5,
+            "max_projects": 3,
+            "created_at": "2025-12-26T05:51:54.867Z"
+        }
+    ],
+    "page": 1,
+    "limit": 10
 }
 
 Error Responses:
-403: Not super_admin
+403: {
+    "success": false,
+    "message": "Forbidden"
+}
 
 8. Add User to Tenant
 
 POST /api/tenants/{TENANT_ID}/users
-Authorization:Not Required
-used: http://localhost:5000/api/tenants/a3fcb1c9-baef-45cf-b42c-a01970f8bccb/users
+Authorization:Required
+Authorization:tenant_admin only
 
 Headers:
 Authorization: Bearer <TENANT_ADMIN_JWT>
@@ -517,19 +613,20 @@ Request Body
 
 Success Response (201)
 {
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "projectId": "uuid",
-    "tenantId": "uuid",
-    "title": "Design Login Page",
-    "description": "Create UI for login screen",
-    "status": "todo",
-    "priority": "high",
-    "assignedTo": "user-uuid",
-    "dueDate": "2025-01-20",
-    "createdAt": "2025-01-01T12:00:00Z"
-  }
+    "success": true,
+    "data": {
+        "id": "b7aace06-68c6-43ec-88a0-cba1f17c2fe2",
+        "project_id": "7654ccbe-ce60-4a24-b3ac-cd6033c23c42",
+        "tenant_id": "ac26495a-da88-420d-a0b4-b5f784570952",
+        "title": "Design Login Page",
+        "description": "Create UI for login screen",
+        "status": "todo",
+        "priority": "high",
+        "assigned_to": "d232cebd-e5d8-4516-90e2-1a77e22a8e54",
+        "due_date": "2025-01-20T00:00:00.000Z",
+        "created_at": "2025-12-27T02:04:55.218Z",
+        "updated_at": "2025-12-27T02:04:55.218Z"
+    }
 }
 
 Error Responses
@@ -545,36 +642,34 @@ Authorization:Required
 Success Response (200):
 
 {
-  "success": true,
-  "data": {
-    "tasks": [
-      {
-        "id": "uuid",
-        "title": "value",
-        "description": "value",
-        "status": "in_progress",
-        "priority": "high",
-        "assignedTo": {
-          "id": "uuid",
-          "fullName": "value",
-          "email": "value"
-        },
-        "dueDate": "2024-07-01",
-        "createdAt": "timestamp"
-      }
-    ],
-    "total": 5,
-   "pagination": {
-      "currentPage": 1,
-      "totalPages": 1,
-      "limit": 50
-    }
-  }
+    "success": true,
+    "data": {
+        "tasks": [
+            {
+                "id": "b7aace06-68c6-43ec-88a0-cba1f17c2fe2",
+                "title": "Design Login Page",
+                "description": "Create UI for login screen",
+                "status": "todo",
+                "priority": "high",
+                "due_date": "2025-01-20T00:00:00.000Z",
+                "created_at": "2025-12-27T02:04:55.218Z",
+                "assignedTo": {
+                    "id": "d232cebd-e5d8-4516-90e2-1a77e22a8e54",
+                    "fullName": "Updated User Name",
+                    "email": "user1@acme.com"
+                }
+            }
+        ],
+        "pagination": {
+            "currentPage": 1,
+            "limit": 50
+        }
+    }
 }
 
 18. Update Task Status
 
-PATCH /api/tasks/:taskId
+PATCH /api/tasks/:taskId/status
 Authorization:Required
 
 Request Body
@@ -583,13 +678,14 @@ Request Body
 }
 
 Success Response (200)
+
 {
-  "success": true,
-  "data": {
-    "id": "uuid",
-    "status": "completed",
-    "updatedAt": "2025-01-01T13:00:00Z"
-  }
+    "success": true,
+    "data": {
+        "id": "b7aace06-68c6-43ec-88a0-cba1f17c2fe2",
+        "status": "completed",
+        "updated_at": "2025-12-27T02:32:41.375Z"
+    }
 }
 
 Error Responses
