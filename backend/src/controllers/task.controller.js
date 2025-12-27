@@ -15,7 +15,7 @@ exports.createTask = async (req, res, next) => {
     );
 
     if (!projectResult.rowCount) {
-      return res.status(403).json({ success: false, message: 'Project not found' });
+      return res.status(404).json({ success: false, message: 'Project not found' });
     }
 
     const project = projectResult.rows[0];
@@ -24,7 +24,7 @@ exports.createTask = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Project does not belong to your tenant' });
     }
 
-    // 2. Validate assigned user (if provided)
+    // 2. Validate assigned user
     if (assignedTo) {
       const userCheck = await db.query(
         `SELECT id FROM users WHERE id = $1 AND tenant_id = $2`,
@@ -82,7 +82,6 @@ exports.listProjectTasks = async (req, res, next) => {
   try {
     const { projectId } = req.params;
     const { status, assignedTo, priority, search, page = 1, limit = 50 } = req.query;
-
     const offset = (page - 1) * limit;
 
     // Verify project belongs to tenant
@@ -119,7 +118,7 @@ exports.listProjectTasks = async (req, res, next) => {
       values.push(`%${search}%`);
     }
 
-    const tasksQuery = `
+    const query = `
       SELECT
         t.id,
         t.title,
@@ -148,7 +147,7 @@ exports.listProjectTasks = async (req, res, next) => {
 
     values.push(limit, offset);
 
-    const tasks = await db.query(tasksQuery, values);
+    const tasks = await db.query(query, values);
 
     res.json({
       success: true,
@@ -175,10 +174,13 @@ exports.updateTaskStatus = async (req, res, next) => {
 
     const result = await db.query(
       `
-      UPDATE tasks
+      UPDATE tasks t
       SET status = $1, updated_at = NOW()
-      WHERE id = $2 AND tenant_id = $3
-      RETURNING id, status, updated_at
+      FROM projects p
+      WHERE t.id = $2
+        AND t.project_id = p.id
+        AND p.tenant_id = $3
+      RETURNING t.id, t.status, t.updated_at
       `,
       [status, taskId, req.user.tenantId]
     );
@@ -205,40 +207,25 @@ exports.updateTask = async (req, res, next) => {
     const values = [];
     let idx = 1;
 
-    if (title) {
-      fields.push(`title = $${idx++}`);
-      values.push(title);
-    }
-    if (description) {
-      fields.push(`description = $${idx++}`);
-      values.push(description);
-    }
-    if (status) {
-      fields.push(`status = $${idx++}`);
-      values.push(status);
-    }
-    if (priority) {
-      fields.push(`priority = $${idx++}`);
-      values.push(priority);
-    }
-    if (assignedTo !== undefined) {
-      fields.push(`assigned_to = $${idx++}`);
-      values.push(assignedTo);
-    }
-    if (dueDate !== undefined) {
-      fields.push(`due_date = $${idx++}`);
-      values.push(dueDate);
-    }
+    if (title) fields.push(`title = $${idx++}`), values.push(title);
+    if (description) fields.push(`description = $${idx++}`), values.push(description);
+    if (status) fields.push(`status = $${idx++}`), values.push(status);
+    if (priority) fields.push(`priority = $${idx++}`), values.push(priority);
+    if (assignedTo !== undefined) fields.push(`assigned_to = $${idx++}`), values.push(assignedTo);
+    if (dueDate !== undefined) fields.push(`due_date = $${idx++}`), values.push(dueDate);
 
     if (!fields.length) {
       return res.status(400).json({ success: false, message: 'No fields to update' });
     }
 
     const query = `
-      UPDATE tasks
+      UPDATE tasks t
       SET ${fields.join(', ')}, updated_at = NOW()
-      WHERE id = $${idx} AND tenant_id = $${idx + 1}
-      RETURNING *
+      FROM projects p
+      WHERE t.id = $${idx}
+        AND t.project_id = p.id
+        AND p.tenant_id = $${idx + 1}
+      RETURNING t.*
     `;
 
     values.push(taskId, req.user.tenantId);
