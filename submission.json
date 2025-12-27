@@ -8,7 +8,7 @@
     },
     "tenants": [
       {
-        "name": "Acme",
+        "name": "Acme Corp",
         "subdomain": "acme",
         "status": "active",
         "subscriptionPlan": "free",
@@ -19,7 +19,7 @@
         },
         "users": [
           {
-            "email": "user@demo.com",
+            "email": "user1@acme.com",
             "password": "User@123",
             "role": "user"
           }
