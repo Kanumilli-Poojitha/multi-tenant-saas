@@ -28,7 +28,6 @@ app.use(
 
 app.use(express.json());
 
-// ✅ REQUIRED HEALTH CHECK
 app.get("/api/health", healthCheck);
 
 app.get("/", (req, res) => {
