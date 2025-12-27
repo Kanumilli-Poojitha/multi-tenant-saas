@@ -65,13 +65,11 @@ backend/
 
 **Purpose**
 - `controllers/` – Business logic for APIs  
-- `models/` – Database models with tenant isolation  
 - `routes/` – API route definitions  
 - `middleware/` – Auth, role, and tenant validation  
 - `utils/` – Reusable helper functions  
 - `config/` – Database and environment setup  
 - `migrations/` – Database schema migrations  
-- `tests/` – API and integration tests  
 
 ### Frontend Structure
 
@@ -116,7 +114,6 @@ frontend/
 - `pages/` – Application screens  
 - `services/` – API communication layer  
 - `context/` – Authentication state  
-- `hooks/` – Custom React hooks  
 
 ## 2. Development Setup Guide
 
