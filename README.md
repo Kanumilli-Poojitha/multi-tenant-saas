@@ -138,3 +138,8 @@ Detailed API documentation available in:
 docs/API.md
 
 APIs are tested using Postman
+
+Demo video
+youtube link:
+
+https://www.youtube.com/watch?v=A142LvTUz9M
