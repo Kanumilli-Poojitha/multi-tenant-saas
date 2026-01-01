@@ -98,12 +98,12 @@ Response:
     "success": true,
     "data": {
         "user": {
-            "id": "f9dc7ef1-c2d4-4b53-a2f5-904cdac73abd",
+            "id": "uuid",
             "email": "superadmin@system.com",
             "fullName": "Super Admin",
             "role": "super_admin"
         },
-        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJmOWRjN2VmMS1jMmQ0LTRiNTMtYTJmNS05MDRjZGFjNzNhYmQiLCJyb2xlIjoic3VwZXJfYWRtaW4iLCJpYXQiOjE3NjY4MDMzNDUsImV4cCI6MTc2Njg4OTc0NX0.uOlb6yfT21a0W2QPRuBVt3pCgPK-WyC3mqbAgE2irGM",
+        "token": "JWT-token",
         "expiresIn": "24h"
     }
 }
@@ -129,13 +129,13 @@ Success Response (200):
 {
     "success": true,
     "data": {
-        "id": "40cb8612-a14a-4e1b-a68b-8cb6d0d9fc37",
+        "id": "uuid",
         "email": "admin@acme.com",
         "fullName": "Acme Admin",
         "role": "tenant_admin",
         "isActive": true,
         "tenant": {
-            "id": "ac26495a-da88-420d-a0b4-b5f784570952",
+            "id": "uuid",
             "name": "Acme Corp",
             "subdomain": "acme",
             "subscriptionPlan": "free",
@@ -176,7 +176,7 @@ Success Response (200):
 {
     "success": true,
     "data": {
-        "id": "ac26495a-da88-420d-a0b4-b5f784570952",
+        "id": "uuid",
         "name": "Acme Corp",
         "subdomain": "acme",
         "status": "active",
@@ -217,7 +217,7 @@ Success Response (200)
     "success": true,
     "message": "Tenant updated successfully",
     "data": {
-        "id": "ac26495a-da88-420d-a0b4-b5f784570952",
+        "id": "uuid",
         "name": "Updated Tenant Name",
         "updated_at": "2025-12-27T01:46:19.898Z"
     }
@@ -242,7 +242,7 @@ Success Response (200):
     "success": true,
     "data": [
         {
-            "id": "6aca1cda-5be2-4637-baeb-5c6f1ed073d1",
+            "id": "uuid",
             "name": "Acme Corp",
             "subdomain": "accme",
             "status": "active",
@@ -252,7 +252,7 @@ Success Response (200):
             "created_at": "2025-12-26T12:42:44.831Z"
         },
         {
-            "id": "f739b7ee-751c-496b-b3bc-71ab6f11c1ea",
+            "id": "uuid",
             "name": "Acme Corp",
             "subdomain": "abcdme",
             "status": "active",
@@ -262,7 +262,7 @@ Success Response (200):
             "created_at": "2025-12-26T12:19:03.621Z"
         },
         {
-            "id": "ddf5d96c-dbc6-4434-9289-6b6f28dd3da6",
+            "id": "uuid",
             "name": "Acme Corp",
             "subdomain": "abcme",
             "status": "active",
@@ -272,7 +272,7 @@ Success Response (200):
             "created_at": "2025-12-26T11:57:03.317Z"
         },
         {
-            "id": "be97c9de-0438-42d0-8b27-cd9cec56f67b",
+            "id": "uuid",
             "name": "Acme Corp",
             "subdomain": "adcme",
             "status": "active",
@@ -282,7 +282,7 @@ Success Response (200):
             "created_at": "2025-12-26T10:38:31.899Z"
         },
         {
-            "id": "0ddadeb9-999e-44e7-b334-1d687dcf2e8d",
+            "id": "uuid",
             "name": "Acme Corp",
             "subdomain": "acmde",
             "status": "active",
@@ -292,7 +292,7 @@ Success Response (200):
             "created_at": "2025-12-26T10:16:18.210Z"
         },
         {
-            "id": "9916db8e-c249-4a87-94b6-abf9a8ea79e0",
+            "id": "uuid",
             "name": "Acme Corp",
             "subdomain": "acmre",
             "status": "active",
@@ -302,7 +302,7 @@ Success Response (200):
             "created_at": "2025-12-26T10:07:01.674Z"
         },
         {
-            "id": "6b64e4ef-d1a7-4b60-b7ca-a432003f8076",
+            "id": "uuid",
             "name": "Demo Corp",
             "subdomain": "democorp",
             "status": "active",
@@ -312,7 +312,7 @@ Success Response (200):
             "created_at": "2025-12-26T09:40:04.337Z"
         },
         {
-            "id": "ac26495a-da88-420d-a0b4-b5f784570952",
+            "id": "uuid",
             "name": "Updated Tenant Name",
             "subdomain": "acme",
             "status": "active",
@@ -322,7 +322,7 @@ Success Response (200):
             "created_at": "2025-12-26T09:33:38.766Z"
         },
         {
-            "id": "df1e2d8b-1761-4b83-8126-6380d7e7dfa2",
+            "id": "uuid",
             "name": "Demo Tenant",
             "subdomain": "demo",
             "status": "active",
@@ -615,14 +615,14 @@ Success Response (201)
 {
     "success": true,
     "data": {
-        "id": "b7aace06-68c6-43ec-88a0-cba1f17c2fe2",
-        "project_id": "7654ccbe-ce60-4a24-b3ac-cd6033c23c42",
-        "tenant_id": "ac26495a-da88-420d-a0b4-b5f784570952",
+        "id": "uuid",
+        "project_id": "id",
+        "tenant_id": "uuid",
         "title": "Design Login Page",
         "description": "Create UI for login screen",
         "status": "todo",
         "priority": "high",
-        "assigned_to": "d232cebd-e5d8-4516-90e2-1a77e22a8e54",
+        "assigned_to": "uuid",
         "due_date": "2025-01-20T00:00:00.000Z",
         "created_at": "2025-12-27T02:04:55.218Z",
         "updated_at": "2025-12-27T02:04:55.218Z"
@@ -646,7 +646,7 @@ Success Response (200):
     "data": {
         "tasks": [
             {
-                "id": "b7aace06-68c6-43ec-88a0-cba1f17c2fe2",
+                "id": "id",
                 "title": "Design Login Page",
                 "description": "Create UI for login screen",
                 "status": "todo",
@@ -654,7 +654,7 @@ Success Response (200):
                 "due_date": "2025-01-20T00:00:00.000Z",
                 "created_at": "2025-12-27T02:04:55.218Z",
                 "assignedTo": {
-                    "id": "d232cebd-e5d8-4516-90e2-1a77e22a8e54",
+                    "id": "id",
                     "fullName": "Updated User Name",
                     "email": "user1@acme.com"
                 }
@@ -682,7 +682,7 @@ Success Response (200)
 {
     "success": true,
     "data": {
-        "id": "b7aace06-68c6-43ec-88a0-cba1f17c2fe2",
+        "id": "id",
         "status": "completed",
         "updated_at": "2025-12-27T02:32:41.375Z"
     }
