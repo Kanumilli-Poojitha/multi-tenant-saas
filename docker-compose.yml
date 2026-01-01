@@ -29,7 +29,7 @@ services:
       DB_PASSWORD: postgres
       JWT_SECRET: dev_secret_key_min_32_chars_long
       JWT_EXPIRES_IN: 24h
-      FRONTEND_URL: http://frontend:3000
+      FRONTEND_URL: http://localhost:3000
     depends_on:
       database:
         condition: service_healthy
@@ -44,8 +44,6 @@ services:
     container_name: frontend
     ports:
       - "3000:3000"
-    environment:
-      VITE_API_URL: http://backend:5000/api
     depends_on:
       backend:
         condition: service_healthy
