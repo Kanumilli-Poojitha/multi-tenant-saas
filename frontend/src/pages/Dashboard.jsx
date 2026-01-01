@@ -15,16 +15,30 @@ export default function Dashboard() {
 
   const loadDashboard = async () => {
     const projectsRes = await api.get("/projects");
-    const tasksRes = await api.get(`/projects/tasks?assignedTo=${user.id}`);
+    const projectList = projectsRes.data.data.projects || [];
 
-    setProjects(projectsRes.data.slice(0, 5));
-    setTasks(tasksRes.data);
+    let userTasks = [];
+
+    if (projectList.length > 0) {
+      const firstProjectId = projectList[0].id;
+      const tasksRes = await api.get(
+        `/projects/${firstProjectId}/tasks`
+      );
+      userTasks = tasksRes.data.data.tasks || [];
+    }
+
+    setProjects(projectList.slice(0, 5));
+    setTasks(userTasks);
 
     setStats({
-      totalProjects: projectsRes.data.length,
-      totalTasks: tasksRes.data.length,
-      completedTasks: tasksRes.data.filter(t => t.status === "completed").length,
-      pendingTasks: tasksRes.data.filter(t => t.status !== "completed").length,
+      totalProjects: projectList.length,
+      totalTasks: userTasks.length,
+      completedTasks: userTasks.filter(
+        (t) => t.status === "completed"
+      ).length,
+      pendingTasks: userTasks.filter(
+        (t) => t.status !== "completed"
+      ).length,
     });
   };
 
@@ -44,7 +58,7 @@ export default function Dashboard() {
 
       <h2>Recent Projects</h2>
       <ul>
-        {projects.map(p => (
+        {projects.map((p) => (
           <li key={p.id}>
             {p.name} | {p.status} | {p.taskCount} tasks
           </li>
@@ -53,9 +67,9 @@ export default function Dashboard() {
 
       <h2>My Tasks</h2>
       <ul>
-        {tasks.map(t => (
+        {tasks.map((t) => (
           <li key={t.id}>
-            {t.title} — {t.priority} — Due: {t.dueDate}
+            {t.title} — {t.priority} — Due: {t.due_date}
           </li>
         ))}
       </ul>

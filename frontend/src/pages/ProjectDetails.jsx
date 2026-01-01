@@ -1,36 +1,50 @@
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { getProjectById } from "../services/projectService";
-import { getTasksByProject } from "../services/taskService";
+import api from "../api/axios";
 
 export default function ProjectDetails() {
   const { projectId } = useParams();
   const [project, setProject] = useState(null);
   const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const p = await getProjectById(projectId);
-      const t = await getTasksByProject(projectId);
-      setProject(p.data);
-      setTasks(t.data);
+      try {
+        const projectRes = await api.get(`/projects/${projectId}`);
+        const tasksRes = await api.get(`/projects/${projectId}/tasks`);
+
+        setProject(projectRes.data?.data?.project || null);
+        setTasks(tasksRes.data?.data?.tasks || []);
+      } catch (err) {
+        console.error("Failed to load project details", err);
+      } finally {
+        setLoading(false);
+      }
     };
+
     load();
   }, [projectId]);
 
-  if (!project) return <p>Loading...</p>;
+  if (loading) return <p className="p-6">Loading...</p>;
+  if (!project) return <p className="p-6">Project not found</p>;
 
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold">{project.name}</h1>
-      <p>{project.description}</p>
+      <p className="mb-4">{project.description}</p>
 
       <h2 className="mt-6 font-semibold">Tasks</h2>
-      {tasks.map((task) => (
-        <div key={task.id} className="border p-2 mt-2">
-          {task.title} – {task.status}
-        </div>
-      ))}
+
+      {tasks.length === 0 ? (
+        <p>No tasks found</p>
+      ) : (
+        tasks.map((task) => (
+          <div key={task.id} className="border p-2 mt-2 rounded">
+            {task.title} — {task.status}
+          </div>
+        ))
+      )}
     </div>
   );
 }

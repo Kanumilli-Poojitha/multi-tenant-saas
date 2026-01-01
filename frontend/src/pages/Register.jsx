@@ -5,11 +5,11 @@ import { Link, useNavigate } from "react-router-dom";
 export default function Register() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    organizationName: "",
+    tenantName: "",
     subdomain: "",
     adminEmail: "",
     adminFullName: "",
-    password: "",
+    adminPassword: "",
     confirmPassword: "",
     terms: false,
   });
@@ -27,15 +27,26 @@ export default function Register() {
     e.preventDefault();
     setError("");
 
-    if (form.password !== form.confirmPassword)
+    if (form.adminPassword !== form.confirmPassword) {
       return setError("Passwords do not match");
+    }
 
-    if (!form.terms)
+    if (!form.terms) {
       return setError("You must accept terms & conditions");
+    }
 
     try {
       setLoading(true);
-      await registerTenant(form);
+
+      await registerTenant({
+        tenantName: form.tenantName,
+        subdomain: form.subdomain,
+        subscriptionPlan: "free",
+        adminFullName: form.adminFullName,
+        adminEmail: form.adminEmail,
+        adminPassword: form.adminPassword,
+      });
+
       setSuccess("Registration successful! Redirecting...");
       setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
@@ -49,18 +60,55 @@ export default function Register() {
     <form onSubmit={submit}>
       <h2>Register Tenant</h2>
 
-      <input name="organizationName" placeholder="Organization Name" onChange={handleChange} required />
-      <input name="subdomain" placeholder="Subdomain" onChange={handleChange} required />
+      <input
+        name="tenantName"
+        placeholder="Organization Name"
+        onChange={handleChange}
+        required
+      />
+
+      <input
+        name="subdomain"
+        placeholder="Subdomain"
+        onChange={handleChange}
+        required
+      />
       <small>{form.subdomain}.yourapp.com</small>
 
-      <input type="email" name="adminEmail" placeholder="Admin Email" onChange={handleChange} required />
-      <input name="adminFullName" placeholder="Admin Full Name" onChange={handleChange} required />
+      <input
+        type="email"
+        name="adminEmail"
+        placeholder="Admin Email"
+        onChange={handleChange}
+        required
+      />
 
-      <input type="password" name="password" placeholder="Password" onChange={handleChange} required />
-      <input type="password" name="confirmPassword" placeholder="Confirm Password" onChange={handleChange} required />
+      <input
+        name="adminFullName"
+        placeholder="Admin Full Name"
+        onChange={handleChange}
+        required
+      />
+
+      <input
+        type="password"
+        name="adminPassword"
+        placeholder="Password"
+        onChange={handleChange}
+        required
+      />
+
+      <input
+        type="password"
+        name="confirmPassword"
+        placeholder="Confirm Password"
+        onChange={handleChange}
+        required
+      />
 
       <label>
-        <input type="checkbox" name="terms" onChange={handleChange} /> Accept Terms
+        <input type="checkbox" name="terms" onChange={handleChange} /> Accept
+        Terms
       </label>
 
       {error && <p style={{ color: "red" }}>{error}</p>}

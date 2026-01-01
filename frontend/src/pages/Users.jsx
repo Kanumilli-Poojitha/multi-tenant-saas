@@ -13,12 +13,15 @@ export default function Users() {
 
   const fetchUsers = async () => {
     const res = await api.get(`/tenants/${user.tenantId}/users`);
-    setUsers(res.data);
+    setUsers(res.data?.data?.users || []);
   };
 
   useEffect(() => {
-    if (user) fetchUsers();
+    if (user?.role === "tenant_admin") fetchUsers();
   }, [user]);
+
+  if (!user) return <p>Loading users...</p>;
+  if (user.role !== "tenant_admin") return <p>Access denied</p>;
 
   const deleteUser = async (id) => {
     if (!window.confirm("Delete this user?")) return;
@@ -28,16 +31,14 @@ export default function Users() {
 
   const filteredUsers = users.filter(
     (u) =>
-      (u.fullName.toLowerCase().includes(search.toLowerCase()) ||
+      (u.full_name.toLowerCase().includes(search.toLowerCase()) ||
         u.email.toLowerCase().includes(search.toLowerCase())) &&
       (roleFilter ? u.role === roleFilter : true)
   );
 
-  if (!user) return <p>Loading users...</p>;
-
   return (
-    <div>
-      <h2>Users</h2>
+    <div className="p-6">
+      <h2 className="text-xl font-bold">Users</h2>
 
       <button onClick={() => setShowModal(true)}>Add User</button>
 
@@ -68,11 +69,11 @@ export default function Users() {
         <tbody>
           {filteredUsers.map((u) => (
             <tr key={u.id}>
-              <td>{u.fullName}</td>
+              <td>{u.full_name}</td>
               <td>{u.email}</td>
               <td>{u.role}</td>
               <td>{u.active ? "Active" : "Inactive"}</td>
-              <td>{new Date(u.createdAt).toLocaleDateString()}</td>
+              <td>{new Date(u.created_at).toLocaleDateString()}</td>
               <td>
                 <button onClick={() => { setEditUser(u); setShowModal(true); }}>
                   Edit
